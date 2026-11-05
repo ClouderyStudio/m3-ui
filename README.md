@@ -1,4 +1,4 @@
-# @cloudery/m3-ui
+# @clderystd/m3-ui
 
 云术工作室的 Material Design 3 组件库。18 个 M3 组件 + 结构令牌 + useModal / v-ripple / v-reveal，
 不依赖任何第三方 UI 组件库。
@@ -23,12 +23,12 @@ unplugin-icons 生成的、手写 SFC、其他图标库的都能传。包里只�
 ## 使用
 
 ```bash
-pnpm add @cloudery/m3-ui --registry=https://npm.pkg.github.com
+pnpm add @clderystd/m3-ui --registry=https://npm.pkg.github.com
 ```
 
 ```ts
-import { M3Button, M3Card, M3Dialog } from '@cloudery/m3-ui'
-import '@cloudery/m3-ui/style.css'   // 结构令牌 + 组件样式（不含配色）
+import { M3Button, M3Card, M3Dialog } from '@clderystd/m3-ui'
+import '@clderystd/m3-ui/style.css'   // 结构令牌 + 组件样式（不含配色）
 ```
 
 `style.css` 要在**站点自己的配色之前**引入，方便站点覆盖。
@@ -53,7 +53,7 @@ cd ../identity-ui && pnpm install   # 让站点拿到新副本
 只跑 `pnpm build` 而不 `pnpm install`，站点侧仍指向旧的 `dist` 副本
 （实测两份 `m3-ui.css` 时间戳会差几分钟，改了也不生效）。
 
-正式接入时应改用发布后的版本号（`@cloudery/m3-ui@^0.1.0`），
+正式接入时应改用发布后的版本号（`@clderystd/m3-ui@^0.1.0`），
 那时升级用 `pnpm update`，行为符合预期。
 
 ## 开发
@@ -72,20 +72,20 @@ pnpm typecheck
 
 ## 发布
 
-发布到 GitHub Packages（`https://npm.pkg.github.com`），包作用域是 `@cloudery`。
+发布到 npm 公共 registry（registry.npmjs.org），包作用域是 `@cloudery`。
 
 1. 准备一个带 `read:packages` + `write:packages` 权限的 GitHub token（classic PAT 即可）；
 2. 写进 `~/.npmrc`（**不要**提交到仓库）：
 
    ```
    @cloudery:registry=https://npm.pkg.github.com
-   //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+   //npm.pkg.github.com/:_authToken=${NPM_TOKEN}
    ```
 
 3. 设置环境变量后发布：
 
    ```bash
-   $env:GITHUB_TOKEN = 'ghp_xxx'      # PowerShell
+   $env:NPM_TOKEN = 'npm_xxx'      # PowerShell
    pnpm publish                       # 会先跑 prepublishOnly -> build
    ```
 

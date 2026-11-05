@@ -1,5 +1,5 @@
 {
-  "name": "@cloudery/m3-ui",
+  "name": "@clderystd/m3-ui",
   "version": "0.1.0",
   "description": "云术工作室 Material Design 3 组件库：官方 M3 令牌实现，配色由使用方注入",
   "type": "module",
@@ -38,13 +38,11 @@
     "vue-tsc": "^3.3.11"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
+    "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ClouderyStudio/identity-ui.git",
-    "directory": "packages/m3-ui"
+    "url": "git+https://github.com/ClouderyStudio/m3-ui.git"
   },
   "license": "UNLICENSED"
 }
