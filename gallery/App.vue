@@ -466,8 +466,9 @@ function showAllTones() {
       <section id="select" class="gallery__section">
         <h2 class="gallery__section-title">Select 下拉</h2>
         <p class="gallery__section-note">
-          用原生 &lt;select&gt; 套 M3 皮肤：键盘、读屏、移动端的原生选择器全部现成，
-          不必自己拿 popup 重造一遍（那条路在手机上的体验几乎总是更差）。
+          自绘面板。原生 &lt;select&gt; 的弹层由操作系统绘制，样式<b>完全无法用 CSS 控制</b> ——
+          深色站点上会突然冒出一块浅色系统白板。自绘之后键盘与读屏要自己补全，
+          支持 ↑↓ / Home / End / Enter / Esc / Tab 与首字母查找。
         </p>
 
         <div class="gallery__surface">
