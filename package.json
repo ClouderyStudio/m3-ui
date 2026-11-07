@@ -1,6 +1,6 @@
 {
   "name": "@clderystd/m3-ui",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "云术工作室 Material Design 3 组件库：官方 M3 令牌实现，配色由使用方注入",
   "type": "module",
   "sideEffects": [
@@ -47,5 +47,5 @@
     "type": "git",
     "url": "git+https://github.com/ClouderyStudio/m3-ui.git"
   },
-  "license": "UNLICENSED"
+  "license": "AGPL-3.0-only"
 }
