@@ -77,16 +77,32 @@ onMounted(() => {
   user-select: none;
 }
 
+/*
+ * 头像加载完成后淡入 + 极轻微放大（1.04 → 1）：
+ * 只淡入的话，图与首字母之间的切换像一次闪烁；带上缩放就读成「图来了」。
+ */
 .md-avatar__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-standard);
+  scale: 1.04;
+  transition:
+    opacity var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-standard),
+    scale var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
 .md-avatar__img.is-loaded {
   opacity: 1;
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 削减：只淡入，不缩放 */
+  .md-avatar__img,
+  .md-avatar__img.is-loaded {
+    scale: 1;
+  }
 }
 
 .md-avatar--ring {

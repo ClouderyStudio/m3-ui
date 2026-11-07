@@ -48,7 +48,8 @@ withDefaults(
   transition:
     box-shadow var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
     background-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
-    transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized);
+    transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+    scale var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
 .md-card--shape-medium {
@@ -88,6 +89,26 @@ withDefaults(
   }
   .md-card--interactive:hover {
     transform: translateY(-4px);
+  }
+}
+
+/* 可点卡片按下时回落：抬起的 4px 收回去，给「按进去了」的触感 */
+.md-card--interactive:active {
+  transform: translateY(-1px);
+  scale: 0.99;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 削减悬浮位移：不让整张卡片跳起来，只保留阴影变化 */
+  @media (hover: hover) {
+    .md-card--interactive:hover {
+      transform: none;
+    }
+  }
+
+  .md-card--interactive:active {
+    transform: none;
+    scale: 1;
   }
 }
 

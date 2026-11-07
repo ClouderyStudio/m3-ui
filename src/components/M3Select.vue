@@ -146,10 +146,11 @@ const empty = computed(() => props.modelValue === '')
   height: 1px;
   margin-inline: 16px;
   background-color: var(--md-sys-color-on-surface-variant);
+  /* 与 M3TextField 同一套：聚焦时 2dp 铺满，用 emphasized-decelerate 摊开 */
   transition:
-    height var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    height var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
     background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
-    margin-inline var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    margin-inline var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
 .select-field__container:focus-within + .select-field__indicator {

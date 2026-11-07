@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { IconComponent } from '../icons'
 import M3Icon from './M3Icon.vue'
+import { vRipple } from '../directives/ripple'
 
 type FabVariant =
   | 'surface'
@@ -88,7 +89,19 @@ const extended = computed(() => typeof props.label === 'string' && props.label.l
   padding: 0;
   transition:
     box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
-    transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    scale var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+/* FAB 按压缩得更多（0.94）：它比普通按钮更「软」，回弹也更有存在感 */
+.md-fab:active {
+  scale: 0.94;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-fab:active {
+    scale: 0.98;
+  }
 }
 
 .md-fab::after {

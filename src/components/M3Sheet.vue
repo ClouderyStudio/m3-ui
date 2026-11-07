@@ -142,13 +142,20 @@ const transitionName = computed(() => 'md-sheet-' + props.side)
 }
 
 /* ---------- Transitions ---------- */
+/*
+ * 侧边 / 底部面板：入场用 emphasized-decelerate 滑入，出场用 accelerate 更快地退走。
+ * 只用 transform（走合成层），不做宽度动画 —— 宽度变化会让面板内的文字重新排版。
+ */
 .md-sheet-start-enter-active,
-.md-sheet-start-leave-active,
 .md-sheet-end-enter-active,
+.md-sheet-bottom-enter-active {
+  transition: transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.md-sheet-start-leave-active,
 .md-sheet-end-leave-active,
-.md-sheet-bottom-enter-active,
 .md-sheet-bottom-leave-active {
-  transition: transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
+  transition: transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-accelerate);
 }
 
 .md-sheet-start-enter-from,

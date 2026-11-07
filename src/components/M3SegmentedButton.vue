@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { IconCheck, type IconComponent } from '../icons'
 import M3Icon from './M3Icon.vue'
+import { vRipple } from '../directives/ripple'
 
 export interface SegmentedOption {
   value: string
@@ -83,7 +84,10 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
 }
 
 /* 通栏变体：均分段宽以填满容器。 */
@@ -125,6 +129,15 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
 
 .md-segmented__check {
   flex-shrink: 0;
+  /* 选中时对勾弹出来，与 chip 同一套语义 */
+  animation: md-pop-in var(--md-sys-motion-duration-medium1)
+    var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-segmented__check {
+    animation: md-fade-in var(--md-sys-motion-duration-short4) linear both;
+  }
 }
 
 /* 万一真的被压缩，宁可省略号，也不要被 .md-ripple-host 的 overflow:hidden 硬切。 */

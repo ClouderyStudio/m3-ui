@@ -225,9 +225,13 @@ function clear() {
   letter-spacing: var(--md-sys-typescale-body-large-tracking);
   pointer-events: none;
   transform-origin: start center;
+  /*
+   * 浮动标签是 M3 里最有辨识度的动效：上浮用 emphasized（先快后慢、微微过冲观感），
+   * 字号与颜色跟随同一个时长，三者必须同步，否则标签会「边飞边变粗」。
+   */
   transition:
-    translate var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
-    font-size var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    translate var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
+    font-size var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
     color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
 }
 
@@ -334,11 +338,15 @@ function clear() {
   margin-inline: 16px;
   background-color: var(--md-sys-color-on-surface-variant);
   transition:
-    height var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    height var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
     background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
-    margin-inline var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    margin-inline var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
+/*
+ * 指示线聚焦时从 1dp 变 2dp 并铺满整宽：宽度变化用 emphasized-decelerate，
+ * 让它「刷」地摊开而不是线性拉伸。颜色紧随其后，避免出现灰色 2dp 的中间态。
+ */
 .field.is-focused .field__indicator {
   height: 2px;
   margin-inline: 0;

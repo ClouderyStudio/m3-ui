@@ -1,5 +1,6 @@
 node_modules
 dist
+gallery-dist
 *.tsbuildinfo
 *.tgz
 *.local

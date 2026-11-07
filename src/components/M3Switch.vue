@@ -92,6 +92,10 @@ function toggle(): void {
   inset: -4px;
 }
 
+/*
+ * 滑块用 translate 位移而不是改 inset：
+ * 改 inset 每帧都会触发布局，translate 走合成层，拖动时更稳。
+ */
 .md-switch__thumb {
   position: absolute;
   inset-block-start: 50%;
@@ -109,6 +113,7 @@ function toggle(): void {
     inset-inline-start var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
     width var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
     height var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+    scale var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-decelerate),
     background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
 }
 
@@ -131,6 +136,20 @@ function toggle(): void {
   width: 24px;
   height: 24px;
   background-color: var(--md-sys-color-on-primary);
+}
+
+/*
+ * 按下滑块「先塌一下」再弹回去：M3 规范里把手在按下时会略微放大，
+ * 这里用 0.9 的收缩，配合 emphasized-decelerate 的收尾，手感更像实体开关。
+ */
+.md-switch:active .md-switch__thumb {
+  scale: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-switch:active .md-switch__thumb {
+    scale: 1;
+  }
 }
 
 .md-switch.is-disabled {

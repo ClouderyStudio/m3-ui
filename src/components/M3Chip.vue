@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { IconCheck, IconClose, type IconComponent } from '../icons'
 import M3Icon from './M3Icon.vue'
+import { vRipple } from '../directives/ripple'
 
 const props = withDefaults(
   defineProps<{
@@ -83,7 +84,14 @@ const isToggle = props.variant === 'filter' || props.toggle
   box-shadow: inset 0 0 0 1px var(--md-sys-color-outline);
   transition:
     background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
-    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    scale var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+/* 与按钮同一套按压反馈；chip 更薄，缩放取 0.95 才看得出来 */
+.md-chip:active:not(.is-disabled) {
+  scale: 0.95;
 }
 
 .md-chip::after {
@@ -124,8 +132,25 @@ const isToggle = props.variant === 'filter' || props.toggle
   box-shadow: none;
 }
 
+/*
+ * 勾选时对勾「弹」出来：只做静态切换的话，选中态和未选中态之间
+ * 只差一个容器的明暗，扫一眼容易漏看。scale + opacity 的短促动画把注意力拉过去。
+ */
 .md-chip__icon--check {
   margin-inline-start: -4px;
+  animation: md-pop-in var(--md-sys-motion-duration-medium1)
+    var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 削减：不缩放，只保留淡入 */
+  .md-chip__icon--check {
+    animation: md-fade-in var(--md-sys-motion-duration-short4) linear both;
+  }
+
+  .md-chip:active:not(.is-disabled) {
+    scale: 0.99;
+  }
 }
 
 .md-chip__trailing {

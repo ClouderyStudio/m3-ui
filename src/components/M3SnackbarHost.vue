@@ -101,16 +101,41 @@ const { current, hide } = useSnackbar()
   margin-block-start: -4px;
 }
 
-.md-snackbar-enter-active,
-.md-snackbar-leave-active {
+/*
+ * 提示条：从下方滑入 + 轻微放大，出场更快地缩回去。
+ * 它盖在页面底部，位移幅度要比对话框大一些（20px → 28px）才看得出「来了」。
+ */
+.md-snackbar-enter-active {
   transition:
-    opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate),
-    translate var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate);
+    opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate),
+    translate var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate),
+    scale var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
-.md-snackbar-enter-from,
+.md-snackbar-leave-active {
+  transition:
+    opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate),
+    translate var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate),
+    scale var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate);
+}
+
+.md-snackbar-enter-from {
+  opacity: 0;
+  translate: -50% 28px;
+  scale: 0.96;
+}
+
 .md-snackbar-leave-to {
   opacity: 0;
-  translate: -50% 20px;
+  translate: -50% 16px;
+  scale: 0.98;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-snackbar-enter-from,
+  .md-snackbar-leave-to {
+    translate: -50% 0;
+    scale: 1;
+  }
 }
 </style>

@@ -44,7 +44,16 @@ withDefaults(defineProps<{ label?: string; rows?: number }>(), { label: '正在�
   flex-shrink: 0;
   border-radius: var(--md-sys-shape-corner-medium);
   background-color: var(--md-sys-color-surface-container-high);
-  animation: md-skeleton-pulse 1.4s var(--md-sys-motion-easing-standard) infinite;
+  /* 扫光比明暗脉冲更像「正在取数据」：一道高光从左扫到右 */
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent) 50%,
+    transparent 80%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  animation: md-shimmer 1.6s var(--md-sys-motion-easing-linear) infinite;
 }
 
 .skeleton__lines {
@@ -58,7 +67,15 @@ withDefaults(defineProps<{ label?: string; rows?: number }>(), { label: '正在�
   height: 12px;
   border-radius: var(--md-sys-shape-corner-full);
   background-color: var(--md-sys-color-surface-container-high);
-  animation: md-skeleton-pulse 1.4s var(--md-sys-motion-easing-standard) infinite;
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent) 50%,
+    transparent 80%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  animation: md-shimmer 1.6s var(--md-sys-motion-easing-linear) infinite;
 }
 
 .skeleton__line--title {
@@ -70,13 +87,16 @@ withDefaults(defineProps<{ label?: string; rows?: number }>(), { label: '正在�
   width: 62%;
 }
 
-@keyframes md-skeleton-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
+/*
+ * 错开每一行的动画起始，扫光才不会像一块板整体闪。
+ * 行间隔 80ms 由模板的 animationDelay 设，这里只负责循环本身。
+ */
+@media (prefers-reduced-motion: reduce) {
+  /* 削减：不扫光，改为静态色块（骨架屏的价值在占位，不在动） */
+  .skeleton__thumb,
+  .skeleton__line {
+    background-image: none;
+    animation: none;
   }
 }
 </style>

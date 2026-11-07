@@ -1,54 +1,66 @@
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
+import Icons from 'unplugin-icons/vite'
 import { defineConfig } from 'vite'
 
 /**
- * 组件库构建：输出 ESM + 类型声明 + 一份独立 CSS。
+ * 两种用途：
+ *   pnpm dev    —— 组件 gallery（gallery/ 下的展示页，不影响发布产物）
+ *   pnpm build  —— 组件库（ESM + 类型声明 + 一份独立 CSS）
  *
- * 关键约定：
- *   - vue 是 peerDependency，不打包进去；
- *   - 样式单独产出 dist/m3-ui.css，由使用方显式 import，
- *     不做成 JS 里自动注入（SSR 与样式顺序都更难控）；
- *   - 类型用 vue-tsc 生成（见 package.json 的 build 脚本），
- *     Vite 只负责 JS 与 CSS。
+ * gallery 是**开发期**的东西：它引用 src/ 源码而不是 dist/，
+ * 所以改组件立刻能在浏览器里看到效果，不必先 build 再 install。
  */
-export default defineConfig({
-  plugins: [
-    vue(),
-    // 产出 .d.ts；rollupTypes 会把所有声明合并成单个入口，使用方无需处理深层路径
-    /*
-     * 类型声明直接输出到 dist/ 根（entryRoot 会剥掉 src/ 前缀），
-     * 和 index.js 同级，使用方解析 .d.ts 不需要知道内部目录结构。
-     * 注意：不要开 rollupTypes —— 它会把 .vue 的类型全部丢掉，产出一个空的 index.d.ts。
-     */
-    dts({
-      tsconfigPath: './tsconfig.json',
-      include: ['src/**/*.ts', 'src/**/*.vue'],
-    }),
-  ],
-  resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
-  },
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    lib: {
-      entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
-      name: 'ClouderyM3Ui',
-      formats: ['es'],
-      fileName: () => 'index.js',
-      cssFileName: 'm3-ui',
+export default defineConfig(({ command }) => {
+  const isServe = command === 'serve'
+
+  return {
+    plugins: [
+      vue(),
+      // gallery 里的示例图标：Material Symbols 编译成内联 SVG，不请求网络
+      Icons({ compiler: 'vue3', scale: 1, defaultClass: 'md-icon-svg' }),
+      // 只在构建库时生成声明；gallery 不需要
+      ...(isServe
+        ? []
+        : [
+            dts({
+              tsconfigPath: './tsconfig.json',
+              include: ['src/**/*.ts', 'src/**/*.vue'],
+            }),
+          ]),
+    ],
+    resolve: {
+      alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },
-    rollupOptions: {
-      // vue 由使用方提供
-      external: ['vue'],
-      output: {
-        assetFileNames: (asset) =>
-          asset.names?.some((name) => name.endsWith('.css')) || asset.name?.endsWith('.css')
-            ? 'm3-ui.css'
-            : 'assets/[name]-[hash][extname]',
-      },
-    },
-  },
+    ...(isServe
+      ? {
+          root: fileURLToPath(new URL('./gallery', import.meta.url)),
+          server: { port: 5180, open: false },
+          build: { outDir: fileURLToPath(new URL('./gallery-dist', import.meta.url)), emptyOutDir: true },
+        }
+      : {
+          build: {
+            outDir: 'dist',
+            emptyOutDir: true,
+            lib: {
+              entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
+              name: 'ClouderyM3Ui',
+              formats: ['es'],
+              fileName: () => 'index.js',
+              cssFileName: 'm3-ui',
+            },
+            rollupOptions: {
+              // vue 由使用方提供
+              external: ['vue'],
+              output: {
+                assetFileNames: (asset) =>
+                  asset.names?.some((name) => name.endsWith('.css')) || asset.name?.endsWith('.css')
+                    ? 'm3-ui.css'
+                    : 'assets/[name]-[hash][extname]',
+              },
+            },
+          },
+        }),
+  }
 })

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { IconComponent } from '../icons'
 import M3Icon from './M3Icon.vue'
+import { vRipple } from '../directives/ripple'
 
 type ButtonVariant = 'filled' | 'tonal' | 'elevated' | 'outlined' | 'text'
 type ButtonSize = 'sm' | 'md' | 'lg'
@@ -105,7 +106,18 @@ const inert = computed(() => props.disabled || props.loading)
     box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
     background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
     height var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
-    padding-inline var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized);
+    padding-inline var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+    /* 按压回弹：松手用 emphasized-decelerate 收尾，比线性回位「弹」得住 */
+    scale var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+/*
+ * 按下缩放 0.97。
+ * 触摸屏没有 hover，按压反馈是用户唯一能确认「点到了」的信号；
+ * 位移取 3% 而不是更小：再小就看不出来，再大就像在抖。
+ */
+.md-btn:active:not(.is-disabled) {
+  scale: 0.97;
 }
 
 /* State layer, painted under the label so text stays crisp. */
@@ -239,6 +251,11 @@ const inert = computed(() => props.disabled || props.loading)
 @media (prefers-reduced-motion: reduce) {
   .md-btn__spinner {
     animation-duration: 1500ms;
+  }
+
+  /* 削减而非删除按压反馈：保留 1% 的缩放，仍能感知到点击 */
+  .md-btn:active:not(.is-disabled) {
+    scale: 0.99;
   }
 }
 </style>

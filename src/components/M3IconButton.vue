@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { IconComponent } from '../icons'
 import M3Icon from './M3Icon.vue'
+import { vRipple } from '../directives/ripple'
 
 type IconButtonVariant = 'standard' | 'filled' | 'tonal' | 'outlined'
 type IconButtonSize = 'sm' | 'md' | 'lg'
@@ -93,7 +94,14 @@ const effectiveVariant = computed(() => (props.selected && props.variant === 'st
     background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
     height var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
-    width var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized);
+    width var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+    scale var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
+    color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* 与 M3Button 同一套按压反馈，图标按钮略小一号（0.92），因为它本身只有 40dp */
+.md-icon-btn:active:not(.is-disabled) {
+  scale: 0.92;
 }
 
 .md-icon-btn--shape-full {
@@ -177,5 +185,12 @@ const effectiveVariant = computed(() => (props.selected && props.variant === 'st
 .md-icon-btn--tonal.is-disabled {
   background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
   color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 削减按压反馈而非删除：1% 的缩放仍能让人确认点到了 */
+  .md-icon-btn:active:not(.is-disabled) {
+    scale: 0.99;
+  }
 }
 </style>

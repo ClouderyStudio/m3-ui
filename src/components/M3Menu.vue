@@ -164,17 +164,40 @@ defineExpose({ open, close, toggle })
   padding-block: 8px;
 }
 
-.md-menu-pop-enter-active,
-.md-menu-pop-leave-active {
+/*
+ * 菜单展开：从锚点方向「长出来」，而不是整块淡入。
+ * 入场用 emphasized-decelerate（快起慢收），出场用 accelerate（慢起快收），
+ * 一进一出方向感一致，收起来时不会像卡了一下。
+ */
+.md-menu-pop-enter-active {
   transition:
     opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
     transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
   transform-origin: top center;
 }
 
-.md-menu-pop-enter-from,
-.md-menu-pop-leave-to {
+.md-menu-pop-leave-active {
+  transition:
+    opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate),
+    transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate);
+  transform-origin: top center;
+}
+
+.md-menu-pop-enter-from {
   opacity: 0;
   transform: scaleY(0.85) translateY(-4px);
+}
+
+.md-menu-pop-leave-to {
+  opacity: 0;
+  transform: scaleY(0.92) translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 削减：不缩放，只淡入淡出 */
+  .md-menu-pop-enter-from,
+  .md-menu-pop-leave-to {
+    transform: none;
+  }
 }
 </style>

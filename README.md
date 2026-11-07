@@ -1,7 +1,18 @@
 # @clderystd/m3-ui
 
-云术工作室的 Material Design 3 组件库。18 个 M3 组件 + 结构令牌 + useModal / v-ripple / v-reveal，
-不依赖任何第三方 UI 组件库。
+云术工作室的 Material Design 3 组件库。26 个 M3 组件 + 结构令牌 + useModal / useSnackbar /
+v-ripple / v-reveal，不依赖任何第三方 UI 组件库。
+
+## Gallery（先看效果）
+
+```bash
+pnpm dev     # http://localhost:5180
+```
+
+所有组件都跑在 `src/` 源码上，改完立刻在浏览器里看到效果，**不必先 build 再 install**。
+每节演示都写了「这个动效为什么这么做」，而不是只摆样子。
+
+Gallery 是开发期的东西，不进发布产物（`dist/` 里没有它）。
 
 ## 关键约定
 
@@ -35,10 +46,30 @@ import '@clderystd/m3-ui/style.css'   // 结构令牌 + 组件样式（不含配
 
 ## 组件
 
-M3Avatar、M3Button、M3Card、M3Chip、M3Dialog、M3Divider、M3Fab、M3Icon、M3IconButton、
-M3List、M3ListItem、M3Menu、M3MenuItem、M3SegmentedButton、M3Sheet、M3Switch、M3Tooltip、M3TopAppBar。
+| 分组 | 组件 |
+| --- | --- |
+| 基础控件 | M3Button、M3IconButton、M3Icon、M3Chip、M3Switch、M3TextField、M3Select |
+| 容器与布局 | M3Card、M3Divider、M3List、M3ListItem、M3TopAppBar、M3Sheet、M3Menu、M3MenuItem、M3Fab、M3Avatar |
+| 浮层 | M3Dialog、M3ConfirmDialog、M3SnackbarHost |
+| 状态与反馈 | M3Alert、M3EmptyState、M3Skeleton、M3Pagination、M3SegmentedButton、M3Tooltip |
 
-另导出 `vRipple`、`vReveal`、`useModal`、`IconCheck`、`IconClose`、`IconExpandMore`。
+另导出 `vRipple`、`vReveal`、`useModal`、`useSnackbar`，以及内置图标
+`IconCheck`、`IconClose`、`IconExpandMore`、`IconError`、`IconWarning`、`IconInfo`、
+`IconCheckCircle`、`IconVisibility`、`IconVisibilityOff`、`IconSearch`、
+`IconChevronLeft`、`IconChevronRight`。
+
+## 动效
+
+组件的「手感」由三件事决定，全部走 `--md-sys-motion-*` 令牌：
+
+- **按压反馈** —— 触摸屏没有 hover，按下缩放是唯一能立刻确认「点到了」的信号。
+  Button/IconButton/Fab/Chip/Card 用 0.97 ~ 0.92，列表项与菜单项不做整行缩放（会带着文字抖）。
+- **状态切换** —— 勾选、展开、指示线这类离散变化用 `emphasized` 缓动，
+  先快后慢地收尾，而不是线性平移。
+- **内容入场** —— 容器加 `.md-stagger`，子元素依次出现（最多 12 个），比整块淡入更像在加载。
+
+`prefers-reduced-motion: reduce` 下**削减而不是删除**：缩放降到 0.99（完全归零会让触摸屏毫无反馈），
+扫光与错开入场停掉，位移归零但淡入淡出保留。
 
 ## 本地联调
 

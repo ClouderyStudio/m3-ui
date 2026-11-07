@@ -114,16 +114,43 @@ useModal(isOpen, panelRef, {
   margin: 8px -8px -8px 0;
 }
 
-.md-dialog-pop-enter-active,
-.md-dialog-pop-leave-active {
+/*
+ * 对话框：入场从下方 16px 升上来 + 从 0.92 放大到 1，
+ * 出场反向且更快（short3），符合「进来要稳、出去要干脆」的一般观感。
+ * 缩放中心保持在面板中心，所以用 translate 与 scale 组合而非 top 变化。
+ */
+.md-dialog-pop-enter-active {
   transition:
-    opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate),
-    translate var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate);
+    opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate),
+    translate var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate),
+    scale var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
-.md-dialog-pop-enter-from,
-.md-dialog-pop-leave-to {
+.md-dialog-pop-leave-active {
+  transition:
+    opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate),
+    translate var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate),
+    scale var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate);
+}
+
+.md-dialog-pop-enter-from {
   opacity: 0;
   translate: -50% calc(-50% + 16px);
+  scale: 0.92;
+}
+
+.md-dialog-pop-leave-to {
+  opacity: 0;
+  translate: -50% calc(-50% + 8px);
+  scale: 0.96;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 削减：不缩放、不位移，只淡入淡出 */
+  .md-dialog-pop-enter-from,
+  .md-dialog-pop-leave-to {
+    translate: -50% -50%;
+    scale: 1;
+  }
 }
 </style>

@@ -55,6 +55,74 @@ html.md-theme-transition *::after {
   }
 }
 
+/* ---------- Component-level motion primitives ---------- */
+/*
+ * 组件的「手感」来自三处，这里只放多数组件都要用的那部分，
+ * 具体幅度留在组件自己的 <style scoped> 里（那里的注释说得出理由）。
+ *
+ *   1. 按压反馈：按下时轻微缩小（0.97），松手回弹 —— 触摸屏没有 hover，
+ *      按压是唯一能立刻确认「点到了」的信号。
+ *   2. 状态切换：勾选、展开、指示线这类离散变化用 emphasized 缓动，
+ *      让变化有「先快后慢」的收尾，而不是线性平移。
+ *   3. 内容入场：错开（stagger）比整块淡入更像在「加载」，不是「闪现」。
+ */
+
+/* 选中态的对勾/圆点：从 0.6 弹到 1，配合淡入 */
+@keyframes md-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 内容「冒出来」：幅度比 md-fade-up 小，用于列表/菜单项逐个出现 */
+@keyframes md-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 骨架屏扫光：比明暗脉冲更像「正在取数据」 */
+@keyframes md-shimmer {
+  from {
+    background-position: -160% 0;
+  }
+  to {
+    background-position: 260% 0;
+  }
+}
+
+/*
+ * 错开入场：给容器加 .md-stagger，子元素依次出现。
+ * 只处理前 12 个（再多的话最后一个要等 1 秒以上，反而像卡住）。
+ */
+.md-stagger > * {
+  animation: md-rise-in var(--md-sys-motion-duration-medium2)
+    var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.md-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.md-stagger > *:nth-child(2) { animation-delay: 40ms; }
+.md-stagger > *:nth-child(3) { animation-delay: 80ms; }
+.md-stagger > *:nth-child(4) { animation-delay: 120ms; }
+.md-stagger > *:nth-child(5) { animation-delay: 160ms; }
+.md-stagger > *:nth-child(6) { animation-delay: 200ms; }
+.md-stagger > *:nth-child(7) { animation-delay: 240ms; }
+.md-stagger > *:nth-child(8) { animation-delay: 280ms; }
+.md-stagger > *:nth-child(9) { animation-delay: 320ms; }
+.md-stagger > *:nth-child(10) { animation-delay: 360ms; }
+.md-stagger > *:nth-child(11) { animation-delay: 400ms; }
+.md-stagger > *:nth-child(n + 12) { animation-delay: 440ms; }
+
 @keyframes md-gradient-pan {
   from {
     background-position: 0% 50%;
@@ -73,5 +141,15 @@ html.md-theme-transition *::after {
   /* Looping decorative motion gets a single pass; entrances keep playing. */
   [class*='md-'] {
     animation-iteration-count: 1;
+  }
+
+  /*
+   * 按下缩放与位移属于「削减」而不是「删除」：
+   * 直接归零会让按钮在触摸屏上完全没有反馈，用户分不清点没点到。
+   * 改成极小的位移 + 更短的时长，保留反馈但去掉晃动。
+   */
+  .md-stagger > * {
+    animation-delay: 0ms !important;
+    animation-duration: var(--md-sys-motion-duration-short4);
   }
 }

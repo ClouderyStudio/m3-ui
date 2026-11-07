@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { IconComponent } from '../icons'
 import M3Icon from './M3Icon.vue'
+import { vRipple } from '../directives/ripple'
 
 const props = withDefaults(
   defineProps<{
@@ -72,6 +73,12 @@ const isLink = computed(() => Boolean(props.href))
   text-decoration: none;
   cursor: pointer;
   border-radius: var(--md-sys-shape-corner-extra-small);
+  transition: color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* 菜单项按下：比列表项更轻的一点位移，暗示「这一项被选中了」 */
+.md-menu-item:active {
+  transform: scale(0.985);
 }
 
 .md-menu-item--two-line {
@@ -136,5 +143,11 @@ const isLink = computed(() => Boolean(props.href))
 .md-menu-item.is-disabled {
   pointer-events: none;
   color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-menu-item:active {
+    transform: none;
+  }
 }
 </style>

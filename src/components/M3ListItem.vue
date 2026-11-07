@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { IconComponent } from '../icons'
 import M3Icon from './M3Icon.vue'
+import { vRipple } from '../directives/ripple'
 
 defineOptions({ inheritAttrs: false })
 
@@ -105,9 +106,12 @@ const isLink = computed(() => Boolean(props.href))
   text-align: start;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
 }
 
+/* 列表项不缩放（整行缩放会带着文字一起抖），只用状态层的深浅表达按压 */
 .md-list-item--lines-1 {
   min-height: 56px;
 }
