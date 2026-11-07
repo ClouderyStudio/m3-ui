@@ -137,7 +137,15 @@ const effectiveVariant = computed(() => (props.selected && props.variant === 'st
   opacity: var(--md-sys-state-pressed-state-layer-opacity);
 }
 
-.md-icon-btn > :deep(*) {
+/*
+ * 让图标浮在状态层与涟漪之上。
+ *
+ * **不能用 `> :deep(*)`**：那会把 ripple 指令运行时插入的 .md-ripple 一起选中，
+ * 把它的 position:absolute 覆盖成 relative —— 那个 16px 的方块就变成了 flex 里的
+ * 实际子项，把图标挤到一边。表现是「点一下图标就左移 8px」，而且只在点击后才出现。
+ * 这里只点名自己渲染的元素（M3Icon 的根节点就是 .md-icon）。
+ */
+.md-icon-btn > :deep(.md-icon) {
   position: relative;
   z-index: 3;
 }
