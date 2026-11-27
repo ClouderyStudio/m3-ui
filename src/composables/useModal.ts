@@ -1,4 +1,6 @@
 import { onBeforeUnmount, watch, type Ref } from 'vue'
+import { lockScroll, unlockScroll } from './useScrollLock'
+import { useEscapeStack } from './useEscapeStack'
 
 /** Elements that can take focus inside a modal panel. */
 const FOCUSABLE = [
@@ -9,23 +11,6 @@ const FOCUSABLE = [
   'textarea:not([disabled])',
   '[tabindex]:not([tabindex="-1"])',
 ].join(',')
-
-let lockCount = 0
-let previousOverflow = ''
-
-/** Reference-counted body scroll lock so nested modals behave. */
-function lockScroll(): void {
-  if (lockCount === 0) {
-    previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-  }
-  lockCount += 1
-}
-
-function unlockScroll(): void {
-  lockCount = Math.max(0, lockCount - 1)
-  if (lockCount === 0) document.body.style.overflow = previousOverflow
-}
 
 export interface UseModalOptions {
   /** Called when the user presses Escape or clicks the scrim. */
@@ -64,12 +49,11 @@ export function useModal(
     target?.focus({ preventScroll: true })
   }
 
+  /*
+   * Tab 只在面板内循环；Esc 交给共享的栈（useEscapeStack）：
+   * 对话框里再开一个日期面板时，一次 Esc 只该关最上面那层。
+   */
   function onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
-      event.stopPropagation()
-      options.onClose()
-      return
-    }
     if (event.key !== 'Tab') return
     const items = focusableItems()
     if (items.length === 0) {
@@ -90,9 +74,14 @@ export function useModal(
     }
   }
 
+  useEscapeStack(isOpen, () => options.onClose())
+
   watch(
     isOpen,
     (open) => {
+      // 服务端渲染时没有 document：只跳过副作用，不改变组件的渲染结果。
+      if (typeof document === 'undefined') return
+
       if (open) {
         restoreTarget = (document.activeElement as HTMLElement | null) ?? null
         lockScroll()
@@ -113,7 +102,9 @@ export function useModal(
   onBeforeUnmount(() => {
     if (isOpen.value) {
       unlockScroll()
-      document.removeEventListener('keydown', onKeydown, true)
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('keydown', onKeydown, true)
+      }
     }
   })
 
