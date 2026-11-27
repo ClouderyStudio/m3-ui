@@ -5,11 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>云术 M3 组件库 · Gallery</title>
     <script>
-      // 首屏前定色，避免深色模式下闪一下白
+      // 首屏前定色：外观与种子色生成出来的整份 token 都从 localStorage 读出来，
+      // 直接注入 style，避免「先闪一下默认蓝、再变成品牌色」的跳变。
       (() => {
-        const saved = localStorage.getItem('m3-gallery-theme')
-        const dark = saved === 'dark' || (!saved && matchMedia('(prefers-color-scheme: dark)').matches)
-        if (dark) document.documentElement.classList.add('dark')
+        try {
+          const raw = localStorage.getItem('m3-ui-theme')
+          const legacy = localStorage.getItem('m3-gallery-theme')
+          if (!raw) {
+            const dark = legacy === 'dark' || (!legacy && matchMedia('(prefers-color-scheme: dark)').matches)
+            if (dark) document.documentElement.classList.add('dark')
+            return
+          }
+
+          const saved = JSON.parse(raw)
+          if (typeof saved.css === 'string' && saved.css) {
+            const style = document.createElement('style')
+            style.id = 'm3-theme'
+            style.textContent = saved.css
+            document.head.appendChild(style)
+          }
+
+          const systemDark = matchMedia('(prefers-color-scheme: dark)').matches
+          const dark = saved.mode === 'dark' || (saved.mode === 'system' && systemDark)
+          if (dark) document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        } catch {
+          /* 存了坏数据就当没有 */
+        }
       })()
     </script>
   </head>
