@@ -30,12 +30,14 @@ const props = withDefaults(
     options: SelectOption[]
     /** 空值选项的文案（传空串表示不提供空选项）。 */
     placeholder?: string
+    /** MD3 field style; outlined draws a 1dp border and cuts a notch for the label. */
+    variant?: 'filled' | 'outlined'
     disabled?: boolean
     required?: boolean
     hint?: string
     error?: string
   }>(),
-  { placeholder: '', disabled: false, required: false, hint: '', error: '' },
+  { placeholder: '', variant: 'filled', disabled: false, required: false, hint: '', error: '' },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
@@ -283,7 +285,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="select-field" :class="{ 'is-empty': empty, 'is-invalid': !!error, 'is-disabled': disabled, 'is-open': open }">
+  <div class="select-field" :class="['select-field--' + variant, { 'is-empty': empty, 'is-invalid': !!error, 'is-disabled': disabled, 'is-open': open }]">
     <label class="select-field__label" :id="fieldId + '-label'" :for="fieldId">{{ label }}</label>
 
     <!--
@@ -296,6 +298,7 @@ onBeforeUnmount(() => {
       type="button"
       class="select-field__control"
       role="combobox"
+      aria-haspopup="listbox"
       :aria-expanded="open"
       :aria-controls="fieldId + '-listbox'"
       :aria-labelledby="fieldId + '-label'"
@@ -325,12 +328,12 @@ onBeforeUnmount(() => {
     <p v-else-if="hint" :id="fieldId + '-hint'" class="select-field__support">{{ hint }}</p>
 
     <Teleport to="body">
-      <Transition name="select-pop">
+      <Transition name="md-select-pop">
         <ul
           v-if="open"
           :id="fieldId + '-listbox'"
           ref="panelRef"
-          class="select-panel"
+          class="md-select-panel"
           role="listbox"
           :aria-labelledby="fieldId + '-label'"
           :style="panelStyle"
@@ -339,7 +342,7 @@ onBeforeUnmount(() => {
             v-for="(row, index) in rows"
             :id="fieldId + '-option-' + index"
             :key="row.value + '-' + index"
-            class="select-panel__item"
+            class="md-select-panel__item"
             :class="{
               'is-selected': !row.placeholder && row.value === modelValue,
               'is-active': index === activeIndex,
@@ -353,8 +356,8 @@ onBeforeUnmount(() => {
             @click="choose(index)"
             @pointerenter="!row.disabled && (activeIndex = index)"
           >
-            <span class="select-panel__label">{{ row.label }}</span>
-            <M3Icon v-if="!row.placeholder && row.value === modelValue" :icon="IconCheck" :size="18" class="select-panel__check" />
+            <span class="md-select-panel__label">{{ row.label }}</span>
+            <M3Icon v-if="!row.placeholder && row.value === modelValue" :icon="IconCheck" :size="18" class="md-select-panel__check" />
           </li>
         </ul>
       </Transition>
@@ -384,6 +387,10 @@ onBeforeUnmount(() => {
 .select-field.is-open .select-field__label,
 .select-field:focus-within .select-field__label {
   color: var(--md-sys-color-primary);
+}
+
+.select-field.is-invalid .select-field__label {
+  color: var(--md-sys-color-error);
 }
 
 /*
@@ -474,6 +481,51 @@ onBeforeUnmount(() => {
   background-color: var(--md-sys-color-error);
 }
 
+/* ---------- Outlined ---------- */
+/* 标签始终贴在描边上（下拉永远有值或占位），所以不需要 filled 那套浮动动画 */
+.select-field--outlined .select-field__label {
+  inset-block-start: 0;
+  inset-inline-start: 12px;
+  translate: 0 -50%;
+  padding-inline: 4px;
+  /* 只在使用点 fallback，不在根节点声明：见 M3TextField 里的同名注释 */
+  background-color: var(--md-field-label-surface, var(--md-sys-color-surface));
+}
+
+.select-field--outlined .select-field__control {
+  align-items: center;
+  padding: 0 16px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background-color: transparent;
+}
+
+@media (hover: hover) {
+  .select-field--outlined .select-field__control:hover {
+    background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent);
+  }
+}
+
+.select-field--outlined.is-open .select-field__control,
+.select-field--outlined:focus-within .select-field__control {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: inset 0 0 0 1px var(--md-sys-color-primary);
+}
+
+.select-field--outlined.is-invalid .select-field__control {
+  border-color: var(--md-sys-color-error);
+  box-shadow: inset 0 0 0 1px var(--md-sys-color-error);
+}
+
+.select-field--outlined .select-field__indicator {
+  display: none;
+}
+
+.select-field--outlined.is-disabled .select-field__control {
+  background-color: transparent;
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+
 .select-field__support {
   margin: 0;
   padding: 4px 16px 0;
@@ -504,7 +556,7 @@ onBeforeUnmount(() => {
  * 定位用 fixed（由脚本按控件的 getBoundingClientRect 算出），
  * 这样控件在滚动容器里也不会把面板裁掉。
  */
-.select-panel {
+.md-select-panel {
   position: fixed;
   z-index: 320;
   margin: 0;
@@ -520,7 +572,7 @@ onBeforeUnmount(() => {
   box-shadow: var(--md-sys-elevation-level2);
 }
 
-.select-panel__item {
+.md-select-panel__item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -535,63 +587,63 @@ onBeforeUnmount(() => {
 }
 
 /* 高亮行用状态层，而不是 hover 专用色 —— 键盘与鼠标走同一套视觉 */
-.select-panel__item.is-active {
+.md-select-panel__item.is-active {
   background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
 }
 
-.select-panel__item.is-selected {
+.md-select-panel__item.is-selected {
   color: var(--md-sys-color-primary);
   font-weight: 500;
 }
 
-.select-panel__item.is-placeholder {
+.md-select-panel__item.is-placeholder {
   color: var(--md-sys-color-on-surface-variant);
 }
 
-.select-panel__item.is-disabled {
+.md-select-panel__item.is-disabled {
   color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
   pointer-events: none;
 }
 
-.select-panel__label {
+.md-select-panel__label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.select-panel__check {
+.md-select-panel__check {
   flex-shrink: 0;
   color: var(--md-sys-color-primary);
 }
 
 /* 展开/收起：从控件方向长出来，与 M3Menu 同一套方向感 */
-.select-pop-enter-active {
+.md-select-pop-enter-active {
   transition:
     opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
     scale var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
   transform-origin: top center;
 }
 
-.select-pop-leave-active {
+.md-select-pop-leave-active {
   transition:
     opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate),
     scale var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-accelerate);
   transform-origin: top center;
 }
 
-.select-pop-enter-from {
+.md-select-pop-enter-from {
   opacity: 0;
   scale: 0.96;
 }
 
-.select-pop-leave-to {
+.md-select-pop-leave-to {
   opacity: 0;
   scale: 0.98;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .select-pop-enter-from,
-  .select-pop-leave-to {
+  .md-select-pop-enter-from,
+  .md-select-pop-leave-to {
     scale: 1;
   }
 

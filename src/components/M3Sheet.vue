@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useId } from 'vue'
 import { IconClose } from '../icons'
 import { useModal } from '../composables/useModal'
 import M3IconButton from './M3IconButton.vue'
@@ -9,23 +9,40 @@ const props = withDefaults(
     modelValue: boolean
     /** Edge the sheet is anchored to. */
     side?: 'start' | 'end' | 'bottom'
-    /** Width (side sheets) or height (bottom sheet) as a CSS length. */
+    /** Width (side sheets) or max height (bottom sheet) as a CSS length. */
     size?: string
     title?: string
     /** Skip the built-in header and render the whole panel through the default slot. */
     bare?: boolean
     /** Hide the close button in the header. */
     hideClose?: boolean
+    /** Allow dismissal by scrim click or Escape. */
+    dismissible?: boolean
+    /** Bottom sheets show the MD3 drag handle by default. */
+    handle?: boolean
   }>(),
-  { side: 'start', size: '360px', title: undefined, bare: false, hideClose: false },
+  {
+    side: 'start',
+    size: '360px',
+    title: undefined,
+    bare: false,
+    hideClose: false,
+    dismissible: true,
+    handle: true,
+  },
 )
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 
 const panelRef = ref<HTMLElement | null>(null)
 const isOpen = computed(() => props.modelValue)
+const titleId = useId()
 
-useModal(isOpen, panelRef, { onClose: () => emit('update:modelValue', false) })
+function close(): void {
+  if (props.dismissible) emit('update:modelValue', false)
+}
+
+useModal(isOpen, panelRef, { onClose: close })
 
 const panelStyle = computed<Record<string, string>>(() => {
   const style: Record<string, string> = {}
@@ -39,12 +56,13 @@ const panelStyle = computed<Record<string, string>>(() => {
 })
 
 const transitionName = computed(() => 'md-sheet-' + props.side)
+const showHandle = computed(() => props.handle && props.side === 'bottom' && !props.bare)
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="md-scrim">
-      <div v-if="modelValue" class="md-scrim" @click="emit('update:modelValue', false)" />
+      <div v-if="modelValue" class="md-scrim" @click="close" />
     </Transition>
 
     <Transition :name="transitionName">
@@ -56,11 +74,14 @@ const transitionName = computed(() => 'md-sheet-' + props.side)
         :style="panelStyle"
         role="dialog"
         aria-modal="true"
-        :aria-label="title"
+        :aria-labelledby="title ? titleId : undefined"
+        :aria-label="title ? undefined : '面板'"
         tabindex="-1"
       >
+        <div v-if="showHandle" class="md-sheet__handle" aria-hidden="true" />
+
         <header v-if="!bare" class="md-sheet__header">
-          <h2 v-if="title" class="md-sheet__title md-typescale-title-large">{{ title }}</h2>
+          <h2 v-if="title" :id="titleId" class="md-sheet__title md-typescale-title-large">{{ title }}</h2>
           <span v-else class="md-sheet__title" />
           <M3IconButton
             v-if="!hideClose"
@@ -91,6 +112,10 @@ const transitionName = computed(() => 'md-sheet-' + props.side)
   overflow: hidden;
 }
 
+.md-sheet:focus {
+  outline: none;
+}
+
 .md-sheet--start {
   inset-block: 0;
   inset-inline-start: 0;
@@ -110,6 +135,15 @@ const transitionName = computed(() => 'md-sheet-' + props.side)
   inset-block-end: 0;
   border-start-start-radius: var(--md-sys-shape-corner-extra-large);
   border-start-end-radius: var(--md-sys-shape-corner-extra-large);
+}
+
+.md-sheet__handle {
+  flex-shrink: 0;
+  width: 32px;
+  height: 4px;
+  margin: 8px auto 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-outline-variant);
 }
 
 .md-sheet__header {

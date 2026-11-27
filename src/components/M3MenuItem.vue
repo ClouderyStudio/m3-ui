@@ -1,59 +1,82 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { IconComponent } from '../icons'
+import { IconCheck } from '../icons'
 import M3Icon from './M3Icon.vue'
-import { vRipple } from '../directives/ripple'
 
 const props = withDefaults(
   defineProps<{
     label?: string
+    /** Alias for label, matching M3ListItem's naming. */
+    headline?: string
     supporting?: string
     icon?: IconComponent | null
+    /** Alias for icon, matching M3ListItem's naming. */
+    leadingIcon?: IconComponent | null
     trailingText?: string
+    trailingIcon?: IconComponent | null
     href?: string
     target?: string
     rel?: string
     disabled?: boolean
     selected?: boolean
+    /** Turns the item into a checkable menu item (role=menuitemcheckbox). */
+    checkable?: boolean
   }>(),
   {
     label: undefined,
+    headline: undefined,
     supporting: undefined,
     icon: null,
+    leadingIcon: null,
     trailingText: undefined,
+    trailingIcon: null,
     href: undefined,
     target: undefined,
     rel: undefined,
     disabled: false,
     selected: false,
+    checkable: false,
   },
 )
 
 const tag = computed(() => (props.href ? 'a' : 'button'))
 const isLink = computed(() => Boolean(props.href))
+const text = computed(() => props.headline ?? props.label ?? '')
+const glyph = computed(() => props.leadingIcon ?? props.icon)
+const role = computed(() => (props.checkable ? 'menuitemcheckbox' : 'menuitem'))
 </script>
 
 <template>
   <component
     :is="tag"
-    v-ripple
     class="md-menu-item"
-    :class="{ 'is-disabled': disabled, 'md-menu-item--two-line': supporting }"
+    :class="{ 'is-disabled': disabled, 'md-menu-item--two-line': supporting, 'is-selected': selected }"
     :href="href"
     :target="isLink ? target : undefined"
     :rel="isLink ? rel : undefined"
     :type="isLink ? undefined : 'button'"
     :disabled="!isLink && disabled ? true : undefined"
-    role="menuitem"
-    :tabindex="disabled ? -1 : 0"
-    :aria-checked="selected ? 'true' : undefined"
+    :role="role"
+    tabindex="-1"
+    :aria-checked="checkable ? selected : undefined"
+    :aria-disabled="disabled ? 'true' : undefined"
   >
-    <M3Icon v-if="icon" :icon="icon" :size="24" class="md-menu-item__icon" />
+    <M3Icon
+      v-if="checkable && selected"
+      :icon="IconCheck"
+      :size="24"
+      class="md-menu-item__icon md-menu-item__icon--check"
+    />
+    <M3Icon v-else-if="glyph" :icon="glyph" :size="24" class="md-menu-item__icon" />
+
     <span class="md-menu-item__text">
-      <span class="md-menu-item__label md-typescale-label-large"><slot>{{ label }}</slot></span>
+      <span class="md-menu-item__label md-typescale-label-large"><slot>{{ text }}</slot></span>
       <span v-if="supporting" class="md-menu-item__supporting md-typescale-body-medium">{{ supporting }}</span>
     </span>
+
     <span v-if="trailingText" class="md-menu-item__trailing md-typescale-label-large">{{ trailingText }}</span>
+    <M3Icon v-if="trailingIcon" :icon="trailingIcon" :size="20" class="md-menu-item__trailing" />
   </component>
 </template>
 
@@ -107,6 +130,9 @@ const isLink = computed(() => Boolean(props.href))
 .md-menu-item:focus-visible::after {
   opacity: var(--md-sys-state-focus-state-layer-opacity);
 }
+.md-menu-item:active::after {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity);
+}
 
 .md-menu-item__icon,
 .md-menu-item__text,
@@ -118,6 +144,12 @@ const isLink = computed(() => Boolean(props.href))
 .md-menu-item__icon {
   color: var(--md-sys-color-on-surface-variant);
   flex-shrink: 0;
+}
+
+.md-menu-item__icon--check {
+  color: var(--md-sys-color-primary);
+  animation: md-pop-in var(--md-sys-motion-duration-short4)
+    var(--md-sys-motion-easing-emphasized-decelerate) both;
 }
 
 .md-menu-item--two-line .md-menu-item__icon {
@@ -138,6 +170,11 @@ const isLink = computed(() => Boolean(props.href))
 
 .md-menu-item__trailing {
   color: var(--md-sys-color-on-surface-variant);
+  flex-shrink: 0;
+}
+
+.md-menu-item.is-selected {
+  color: var(--md-sys-color-primary);
 }
 
 .md-menu-item.is-disabled {
@@ -148,6 +185,10 @@ const isLink = computed(() => Boolean(props.href))
 @media (prefers-reduced-motion: reduce) {
   .md-menu-item:active {
     transform: none;
+  }
+
+  .md-menu-item__icon--check {
+    animation: md-fade-in var(--md-sys-motion-duration-short3) linear both;
   }
 }
 </style>

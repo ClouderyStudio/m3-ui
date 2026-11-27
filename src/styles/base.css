@@ -238,11 +238,12 @@ h6 {
 }
 
 /* ---------- Scroll reveal ---------- */
-/* Travel, scale and blur are tunable per element through --md-reveal-y /
-   --md-reveal-scale (set by the v-reveal directive). */
+/* Travel, scale and blur are tunable per element through --md-reveal-x /
+   --md-reveal-y / --md-reveal-scale (set by v-reveal and useScrollReveal). */
 .md-reveal {
   opacity: 0;
-  transform: translate3d(0, var(--md-reveal-y, 40px), 0) scale(var(--md-reveal-scale, 0.98));
+  transform: translate3d(var(--md-reveal-x, 0px), var(--md-reveal-y, 40px), 0)
+    scale(var(--md-reveal-scale, 0.98));
   transition:
     opacity var(--md-sys-motion-duration-extra-long1) var(--md-sys-motion-easing-emphasized-decelerate),
     transform var(--md-sys-motion-duration-extra-long1) var(--md-sys-motion-easing-emphasized-decelerate);
@@ -272,7 +273,7 @@ h6 {
   /* Trim, never delete: keep a shorter slide and a lighter blur so the
      entrance is still legible with animation effects switched off. */
   .md-reveal {
-    transform: translate3d(0, var(--md-reveal-y, 16px), 0);
+    transform: translate3d(var(--md-reveal-x, 0px), var(--md-reveal-y, 16px), 0);
   }
 
   .md-reveal--blur {
@@ -314,6 +315,59 @@ h6 {
 
 :target {
   scroll-margin-top: calc(var(--md-sys-top-app-bar-height) + 24px);
+}
+
+/* ---------- Popup surface (menus, dropdown panels, date panels) ---------- */
+/*
+ * 弹层表面统一放在这里，而不是每个组件各写一遍。
+ * 本批新增的自动完成 / 多选 / 日期 / 时间 / 右键菜单都复用这一套：
+ * container 色 + 一级海拔 + 8dp 圆角，scroll 时不让背景跟着滚（overscroll-behavior）。
+ */
+.md-panel {
+  position: fixed;
+  z-index: 320;
+  margin: 0;
+  padding-block: 8px;
+  list-style: none;
+  max-height: min(420px, calc(100dvh - 96px));
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  border-radius: var(--md-sys-shape-corner-small);
+  background-color: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-level2);
+  font-family: var(--md-ref-typeface-plain);
+}
+
+.md-panel--flush {
+  padding-block: 0;
+}
+
+/* 行高亮：鼠标与键盘走同一套，避免「看起来选的不一样」 */
+.md-panel-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding-inline: 16px 12px;
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+  cursor: pointer;
+  user-select: none;
+}
+
+.md-panel-option.is-active {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+.md-panel-option.is-selected {
+  color: var(--md-sys-color-primary);
+}
+
+.md-panel-option.is-disabled {
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  pointer-events: none;
 }
 
 /* ---------- Scrim (dialogs and sheets) ---------- */

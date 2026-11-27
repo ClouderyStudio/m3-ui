@@ -17,7 +17,15 @@ const props = withDefaults(
     /** Accessible name — required, since the button has no visible label. */
     label: string
     selected?: boolean
+    /**
+     * Marks the button as a two-state control even without a selectedIcon.
+     * Without it, selected is only a visual emphasis and no aria-pressed is emitted —
+     * a toggle that never announces its state is the most common icon-button a11y bug.
+     */
+    toggleable?: boolean
     disabled?: boolean
+    /** Busy state: keeps the button's colours, swaps the glyph for a spinner. */
+    loading?: boolean
     href?: string
     target?: string
     rel?: string
@@ -30,7 +38,9 @@ const props = withDefaults(
     variant: 'standard',
     size: 'md',
     selected: false,
+    toggleable: false,
     disabled: false,
+    loading: false,
     href: undefined,
     target: undefined,
     rel: undefined,
@@ -47,6 +57,8 @@ const glyph = computed(() => {
 })
 const glyphSize = computed(() => (props.size === 'lg' ? 24 : props.size === 'sm' ? 18 : 24))
 const effectiveVariant = computed(() => (props.selected && props.variant === 'standard' ? 'tonal' : props.variant))
+const inert = computed(() => props.disabled || props.loading)
+const pressed = computed(() => (props.toggleable || props.selectedIcon ? props.selected : undefined))
 </script>
 
 <template>
@@ -58,20 +70,22 @@ const effectiveVariant = computed(() => (props.selected && props.variant === 'st
       'md-icon-btn--' + effectiveVariant,
       'md-icon-btn--' + size,
       'md-icon-btn--shape-' + shape,
-      { 'is-selected': selected, 'is-disabled': disabled },
+      { 'is-selected': selected, 'is-disabled': disabled, 'is-loading': loading },
     ]"
     :href="href"
     :target="isLink ? target : undefined"
     :rel="isLink ? rel : undefined"
     :type="isLink ? undefined : type"
-    :disabled="!isLink && disabled ? true : undefined"
+    :disabled="!isLink && inert ? true : undefined"
     :aria-label="label"
-    :aria-pressed="selectedIcon ? selected : undefined"
+    :aria-pressed="pressed"
+    :aria-busy="loading ? 'true' : undefined"
     :aria-disabled="disabled ? 'true' : undefined"
     :tabindex="disabled && isLink ? -1 : undefined"
     :title="label"
   >
-    <M3Icon :icon="glyph" :size="glyphSize" />
+    <span v-if="loading" class="md-icon-btn__spinner" aria-hidden="true" />
+    <M3Icon v-else :icon="glyph" :size="glyphSize" />
   </component>
 </template>
 
@@ -140,7 +154,7 @@ const effectiveVariant = computed(() => (props.selected && props.variant === 'st
 /*
  * 让图标浮在状态层与涟漪之上。
  *
- * **不能用 `> :deep(*)`**：那会把 ripple 指令运行时插入的 .md-ripple 一起选中，
+ * 不能用通配的 :deep(*)：那会把 ripple 指令运行时插入的 .md-ripple 一起选中，
  * 把它的 position:absolute 覆盖成 relative —— 那个 16px 的方块就变成了 flex 里的
  * 实际子项，把图标挤到一边。表现是「点一下图标就左移 8px」，而且只在点击后才出现。
  * 这里只点名自己渲染的元素（M3Icon 的根节点就是 .md-icon）。
@@ -148,6 +162,24 @@ const effectiveVariant = computed(() => (props.selected && props.variant === 'st
 .md-icon-btn > :deep(.md-icon) {
   position: relative;
   z-index: 3;
+}
+
+.md-icon-btn__spinner {
+  position: relative;
+  z-index: 3;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--md-sys-shape-corner-full);
+  animation: md-icon-btn-spin 640ms linear infinite;
+}
+
+@keyframes md-icon-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ---------- Variants ---------- */
@@ -195,10 +227,31 @@ const effectiveVariant = computed(() => (props.selected && props.variant === 'st
   color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
 }
 
+/* Busy keeps its emphasis; only input is blocked. */
+.is-loading {
+  pointer-events: none;
+}
+.md-icon-btn--filled.is-loading {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+.md-icon-btn--tonal.is-loading {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.md-icon-btn--outlined.is-loading {
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* 削减按压反馈而非删除：1% 的缩放仍能让人确认点到了 */
   .md-icon-btn:active:not(.is-disabled) {
     scale: 0.99;
+  }
+
+  .md-icon-btn__spinner {
+    animation-duration: 1500ms;
   }
 }
 </style>

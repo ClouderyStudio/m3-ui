@@ -10,6 +10,8 @@ const props = withDefaults(
   defineProps<{
     /** Primary text. Can also come from the default slot. */
     headline?: string
+    /** Small label above the headline (MD3 list "overline"). */
+    overline?: string
     /** Secondary text under the headline. */
     supporting?: string
     leadingIcon?: IconComponent | null
@@ -28,6 +30,7 @@ const props = withDefaults(
   }>(),
   {
     headline: undefined,
+    overline: undefined,
     supporting: undefined,
     leadingIcon: null,
     href: undefined,
@@ -47,6 +50,11 @@ const tag = computed(() => {
   return 'div'
 })
 const isLink = computed(() => Boolean(props.href))
+const lineCount = computed(() => {
+  if (props.lines) return props.lines
+  if (props.overline && props.supporting) return 3
+  return props.overline || props.supporting ? 2 : 1
+})
 </script>
 
 <template>
@@ -57,7 +65,7 @@ const isLink = computed(() => Boolean(props.href))
       v-bind="$attrs"
       class="md-list-item"
       :class="[
-        'md-list-item--lines-' + (lines ?? (supporting ? 2 : 1)),
+        'md-list-item--lines-' + lineCount,
         { 'is-selected': selected, 'is-disabled': disabled, 'md-list-item--padded': padded },
       ]"
       :href="href"
@@ -74,6 +82,9 @@ const isLink = computed(() => Boolean(props.href))
       </span>
 
       <span class="md-list-item__text">
+        <span v-if="overline || $slots.overline" class="md-list-item__overline md-typescale-label-small">
+          <slot name="overline">{{ overline }}</slot>
+        </span>
         <span class="md-list-item__headline md-typescale-body-large">
           <slot>{{ headline }}</slot>
         </span>
@@ -176,6 +187,10 @@ const isLink = computed(() => Boolean(props.href))
   min-width: 0;
 }
 
+.md-list-item__overline {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 .md-list-item__headline {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -198,7 +213,8 @@ const isLink = computed(() => Boolean(props.href))
   background-color: var(--md-sys-color-secondary-container);
 }
 
-.md-list-item-padded {
+/* 旧版选择器漏了一个连字符（.md-list-item-padded），padded 一直没有生效 */
+.md-list-item--padded {
   padding-inline: 24px;
 }
 

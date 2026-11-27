@@ -24,12 +24,20 @@ const props = withDefaults(
      * (Extension over the upstream copy — the identity flows submit over the network.)
      */
     loading?: boolean
+    /**
+     * Destructive action. MD3 has no official "danger" role, so the whole emphasis scale is
+     * re-pointed at the error roles instead of adding a sixth variant — the emphasis (filled
+     * vs outlined vs text) still reads the same, only the meaning changes.
+     */
+    danger?: boolean
     /** Renders an anchor instead of a button. */
     href?: string
     target?: string
     rel?: string
     /** Native button type; ignored when href is set. */
     type?: 'button' | 'submit' | 'reset'
+    /** Accessible name, needed when the visible label is an icon or is rendered by a slot. */
+    ariaLabel?: string
     /** Stretch to the container width. */
     block?: boolean
   }>(),
@@ -40,10 +48,12 @@ const props = withDefaults(
     trailingIcon: null,
     disabled: false,
     loading: false,
+    danger: false,
     href: undefined,
     target: undefined,
     rel: undefined,
     type: 'button',
+    ariaLabel: undefined,
     block: false,
   },
 )
@@ -62,7 +72,12 @@ const inert = computed(() => props.disabled || props.loading)
     :class="[
       'md-btn--' + variant,
       'md-btn--' + size,
-      { 'md-btn--block': block, 'is-disabled': inert, 'is-loading': loading },
+      {
+        'md-btn--block': block,
+        'is-disabled': inert,
+        'is-loading': loading,
+        'is-danger': danger,
+      },
     ]"
     :href="href"
     :target="isLink ? target : undefined"
@@ -71,6 +86,7 @@ const inert = computed(() => props.disabled || props.loading)
     :disabled="!isLink && inert ? true : undefined"
     :aria-disabled="inert ? 'true' : undefined"
     :aria-busy="loading ? 'true' : undefined"
+    :aria-label="ariaLabel"
     :tabindex="inert && isLink ? -1 : undefined"
   >
     <span v-if="loading" class="md-btn__spinner" aria-hidden="true" />
@@ -107,7 +123,6 @@ const inert = computed(() => props.disabled || props.loading)
     background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
     height var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
     padding-inline var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
-    /* 按压回弹：松手用 emphasized-decelerate 收尾，比线性回位「弹」得住 */
     scale var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
@@ -202,6 +217,24 @@ const inert = computed(() => props.disabled || props.loading)
   }
 }
 
+/* ---------- Destructive ---------- */
+.md-btn--filled.is-danger {
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+.md-btn--tonal.is-danger {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+.md-btn--elevated.is-danger,
+.md-btn--outlined.is-danger,
+.md-btn--text.is-danger {
+  color: var(--md-sys-color-error);
+}
+.md-btn--outlined.is-danger {
+  box-shadow: inset 0 0 0 1px var(--md-sys-color-error);
+}
+
 /* ---------- Sizes ---------- */
 .md-btn--sm {
   height: 32px;
@@ -243,9 +276,17 @@ const inert = computed(() => props.disabled || props.loading)
   background-color: var(--md-sys-color-primary);
   color: var(--md-sys-color-on-primary);
 }
+.md-btn--filled.is-danger.is-loading {
+  background-color: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
 .md-btn--tonal.is-loading {
   background-color: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
+}
+.md-btn--tonal.is-danger.is-loading {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
 }
 
 @media (prefers-reduced-motion: reduce) {

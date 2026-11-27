@@ -8,6 +8,7 @@
  * 返回 true = 用户确认，false = 取消/关闭。
  */
 import { ref } from 'vue'
+import type { IconComponent } from '../icons'
 import M3Button from './M3Button.vue'
 import M3Dialog from './M3Dialog.vue'
 
@@ -19,6 +20,10 @@ export interface ConfirmOptions {
   cancelLabel?: string
   /** 破坏性操作：确认按钮换成 error 配色。 */
   danger?: boolean
+  /** 标题上方的图标。 */
+  icon?: IconComponent | null
+  /** 弹层宽度。 */
+  size?: 'sm' | 'md' | 'lg'
 }
 
 const open = ref(false)
@@ -52,21 +57,22 @@ defineExpose({ ask, settle })
 </script>
 
 <template>
-  <M3Dialog :model-value="open" :title="options.title" @update:model-value="settle(false)">
+  <M3Dialog
+    :model-value="open"
+    :title="options.title"
+    :icon="options.icon ?? null"
+    :size="options.size ?? 'md'"
+    @update:model-value="settle(false)"
+  >
     <div class="confirm__body">
       <p v-for="(text, index) in paragraphs()" :key="index" class="confirm__text">{{ text }}</p>
     </div>
 
     <template #actions>
       <M3Button variant="text" @click="settle(false)">{{ options.cancelLabel ?? '取消' }}</M3Button>
-      <button
-        type="button"
-        class="confirm__action"
-        :class="{ 'confirm__action--danger': options.danger }"
-        @click="settle(true)"
-      >
+      <M3Button :danger="options.danger" @click="settle(true)">
         {{ options.confirmLabel ?? '确定' }}
-      </button>
+      </M3Button>
     </template>
   </M3Dialog>
 </template>
@@ -81,36 +87,5 @@ defineExpose({ ask, settle })
 .confirm__text {
   margin: 0;
   white-space: pre-line;
-}
-
-/*
- * 自己实现一个按钮，只为在破坏性操作时换成 error 角色。
- * M3Button 的颜色来自变体令牌，没有 danger 变体；加一个变体要动公共 API，
- * 这里就近实现，视觉参数与 M3Button（filled / md）保持一致。
- */
-.confirm__action {
-  height: 40px;
-  padding-inline: 24px;
-  border: none;
-  border-radius: var(--md-sys-shape-corner-full);
-  background-color: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-  font-family: inherit;
-  font-size: var(--md-sys-typescale-label-large-size);
-  font-weight: var(--md-sys-typescale-label-large-weight);
-  letter-spacing: var(--md-sys-typescale-label-large-tracking);
-  cursor: pointer;
-  transition: box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
-}
-
-.confirm__action--danger {
-  background-color: var(--md-sys-color-error);
-  color: var(--md-sys-color-on-error);
-}
-
-@media (hover: hover) {
-  .confirm__action:hover {
-    box-shadow: var(--md-sys-elevation-level1);
-  }
 }
 </style>

@@ -86,29 +86,58 @@ withDefaults(
   min-height: var(--md-sys-top-app-bar-height);
 }
 
+/*
+ * M3 medium / large 的顶栏是「两行」而不是「把三个槽竖着堆起来」：
+ * 第一行 leading ↔ actions，第二行是更大的标题。
+ * 用 grid 显式摆位，DOM 顺序仍然是 leading → title → actions。
+ */
+.md-top-bar--medium .md-top-bar__inner,
+.md-top-bar--large .md-top-bar__inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-content: space-between;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 8px;
+}
+
 .md-top-bar--medium .md-top-bar__inner {
   min-height: 112px;
-  align-items: flex-end;
-  padding-block-end: 20px;
+  padding-block: 12px 20px;
 }
 
 .md-top-bar--large .md-top-bar__inner {
   min-height: 152px;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-end;
-  gap: 0;
-  padding-block-end: 28px;
+  padding-block: 12px 28px;
+}
+
+.md-top-bar--medium .md-top-bar__leading,
+.md-top-bar--large .md-top-bar__leading {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.md-top-bar--medium .md-top-bar__actions,
+.md-top-bar--large .md-top-bar__actions {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.md-top-bar--medium .md-top-bar__title,
+.md-top-bar--large .md-top-bar__title {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.md-top-bar--medium .md-top-bar__title {
+  font-size: var(--md-sys-typescale-headline-small-size);
+  line-height: var(--md-sys-typescale-headline-small-line-height);
 }
 
 .md-top-bar--large .md-top-bar__title {
-  order: 3;
-  margin-block-start: 8px;
-}
-
-.md-top-bar--large .md-top-bar__actions {
-  order: 2;
-  align-self: flex-end;
+  margin-block-start: 0;
 }
 
 .md-top-bar__leading,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useId } from 'vue'
 import type { IconComponent } from '../icons'
 import { useModal } from '../composables/useModal'
 import M3Icon from './M3Icon.vue'
@@ -13,14 +13,17 @@ const props = withDefaults(
     /** Allow dismissal by scrim click or Escape. */
     dismissible?: boolean
     ariaLabel?: string
+    /** Dialog width: 360dp / 560dp / 800dp. */
+    size?: 'sm' | 'md' | 'lg'
   }>(),
-  { title: undefined, icon: null, dismissible: true, ariaLabel: undefined },
+  { title: undefined, icon: null, dismissible: true, ariaLabel: undefined, size: 'md' },
 )
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 
 const panelRef = ref<HTMLElement | null>(null)
 const isOpen = computed(() => props.modelValue)
+const titleId = useId()
 
 useModal(isOpen, panelRef, {
   onClose: () => {
@@ -44,16 +47,18 @@ useModal(isOpen, panelRef, {
         v-if="modelValue"
         ref="panelRef"
         class="md-dialog"
+        :class="'md-dialog--' + size"
         role="dialog"
         aria-modal="true"
-        :aria-label="ariaLabel ?? title"
+        :aria-labelledby="title ? titleId : undefined"
+        :aria-label="title ? undefined : (ariaLabel ?? '对话框')"
         tabindex="-1"
       >
         <div v-if="icon" class="md-dialog__icon">
           <M3Icon :icon="icon" :size="24" />
         </div>
 
-        <h2 v-if="title" class="md-dialog__headline md-typescale-headline-small">{{ title }}</h2>
+        <h2 v-if="title" :id="titleId" class="md-dialog__headline md-typescale-headline-small">{{ title }}</h2>
 
         <div class="md-dialog__body md-typescale-body-medium"><slot /></div>
 
@@ -84,6 +89,17 @@ useModal(isOpen, panelRef, {
   overflow: hidden;
 }
 
+.md-dialog:focus {
+  outline: none;
+}
+
+.md-dialog--sm {
+  width: min(360px, calc(100vw - 48px));
+}
+.md-dialog--lg {
+  width: min(800px, calc(100vw - 48px));
+}
+
 .md-dialog__icon {
   display: flex;
   align-items: center;
@@ -112,6 +128,12 @@ useModal(isOpen, panelRef, {
   justify-content: flex-end;
   gap: 8px;
   margin: 8px -8px -8px 0;
+}
+
+@media (max-width: 480px) {
+  .md-dialog__actions {
+    flex-wrap: wrap;
+  }
 }
 
 /*

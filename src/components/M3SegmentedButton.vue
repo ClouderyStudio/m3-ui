@@ -7,6 +7,7 @@ export interface SegmentedOption {
   value: string
   label: string
   icon?: IconComponent
+  disabled?: boolean
 }
 
 withDefaults(
@@ -16,18 +17,25 @@ withDefaults(
     modelValue: string
     /** Full-width segments instead of content-width. */
     block?: boolean
+    /** Segment height: 32dp or the MD3 default 40dp. */
+    size?: 'sm' | 'md'
     ariaLabel?: string
   }>(),
-  { block: false, ariaLabel: undefined },
+  { block: false, size: 'md', ariaLabel: undefined },
 )
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
+
+function select(option: SegmentedOption): void {
+  if (option.disabled) return
+  emit('update:modelValue', option.value)
+}
 </script>
 
 <template>
   <div
     class="md-segmented"
-    :class="{ 'md-segmented--block': block }"
+    :class="['md-segmented--' + size, { 'md-segmented--block': block }]"
     role="radiogroup"
     :aria-label="ariaLabel"
   >
@@ -38,9 +46,10 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
       type="button"
       role="radio"
       class="md-segmented__item"
-      :class="{ 'is-selected': option.value === modelValue }"
+      :class="{ 'is-selected': option.value === modelValue, 'is-disabled': option.disabled }"
       :aria-checked="option.value === modelValue"
-      @click="emit('update:modelValue', option.value)"
+      :disabled="option.disabled"
+      @click="select(option)"
     >
       <M3Icon v-if="option.value === modelValue" :icon="IconCheck" :size="18" class="md-segmented__check" />
       <M3Icon v-else-if="option.icon" :icon="option.icon" :size="18" class="md-segmented__check" />
@@ -59,6 +68,10 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
   height: 40px;
 }
 
+.md-segmented--sm {
+  height: 32px;
+}
+
 .md-segmented--block {
   display: flex;
   width: 100%;
@@ -70,9 +83,11 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
   align-items: center;
   justify-content: center;
   gap: 8px;
-  /* 按内容取宽。原来的 flex:1（basis 0）会把各段强行等分，标签长的那一段因此被
-     挤掉几个像素（后台「全部 / 待审核 / 已发布」实测切掉 7px）。只有 block 变体
-     才需要均分，见下面的覆盖规则。 */
+  /*
+   * 按内容取宽。原来的 flex:1（basis 0）会把各段强行等分，标签长的那一段因此被
+   * 挤掉几个像素（后台「全部 / 待审核 / 已发布」实测切掉 7px）。只有 block 变体
+   * 才需要均分，见下面的覆盖规则。
+   */
   flex: 0 1 auto;
   padding-inline: 16px;
   border: none;
@@ -88,6 +103,11 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
     background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
     color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-segmented--sm .md-segmented__item {
+  padding-inline: 12px;
+  font-size: var(--md-sys-typescale-label-medium-size);
 }
 
 /* 通栏变体：均分段宽以填满容器。 */
@@ -152,8 +172,18 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
   color: var(--md-sys-color-on-secondary-container);
 }
 
-.md-segmented__item.is-selected + .md-segmented__item,
-.md-segmented__item.is-selected {
-  box-shadow: inset 1px 0 0 0 var(--md-sys-color-outline);
+/*
+ * 分隔线只由相邻选择器画（.item + .item），选中项不再额外补一条左边线：
+ * 旧规则会给第一段的圆角也画上一条竖线，看起来像没对齐。
+ */
+
+.md-segmented__item.is-disabled {
+  cursor: not-allowed;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+}
+
+.md-segmented__item.is-disabled.is-selected {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
 }
 </style>
